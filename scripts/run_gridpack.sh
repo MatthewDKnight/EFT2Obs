@@ -21,7 +21,7 @@ EVENTS=$2
 SEED=$3
 PLUGINS=$4
 
-GRIDPACK_DIR="gridpack_run_${SEED}"
+#GRIDPACK_DIR="gridpack_run_${SEED}"
 
 # Check if TMPDIR is set
 if [ -z ${TMPDIR+x} ]; then
@@ -30,6 +30,9 @@ if [ -z ${TMPDIR+x} ]; then
 else
 	echo ">> TMPDIR is set to ${TMPDIR}"
 fi
+
+###Sets the gridpack directory to be in tmpdir
+GRIDPACK_DIR="${TMPDIR}/gridpack_run_${SEED}"
 
 if [ -d "${GRIDPACK_DIR}" ]; then rm -r "${GRIDPACK_DIR}"; fi
 

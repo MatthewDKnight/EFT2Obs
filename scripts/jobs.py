@@ -68,7 +68,7 @@ class Jobs:
 
     def attach_job_args(self, group):
         group.add_argument('--job-mode', default=self.job_mode, choices=[
-                           'interactive', 'script', 'lxbatch', 'condor', 'ts'], help='Task execution mode')
+                           'interactive', 'script', 'lxbatch', 'condor', 'ts', 'sge'], help='Task execution mode')
         group.add_argument('--task-name', default=self.task_name,
                            help='Task name, used for job script and log filenames for batch system tasks')
         group.add_argument('--dir', default=self.task_dir,
@@ -188,7 +188,7 @@ class Jobs:
         script_list = []
         status_result = {}
         njobs = 0
-        if self.job_mode in ['script', 'lxbatch', 'ts']:
+        if self.job_mode in ['script', 'lxbatch', 'ts', 'sge']:
             for i, j in enumerate(range(0, len(self.job_queue), self.merge)):
                 njobs += 1
                 script_name = 'job_%s_%i.sh' % (self.task_name, i)
@@ -229,7 +229,16 @@ class Jobs:
                 if self.tracking and not self.dry_run:
                     os.rename(full_script.replace('.sh', '.status.created'), full_script.replace('.sh', '.status.submitted'))
                 run_command(self.dry_run, 'ts bash -c "eval %s"' % (full_script))
-        if self.job_mode == 'condor':
+        if self.job_mode == 'sge':
+	    print("Howdy")
+            for script in script_list:
+                full_script = os.path.abspath(script)
+                logname = full_script.replace('.sh', '_%J.log')
+                if self.tracking and not self.dry_run:
+                    os.rename(full_script.replace('.sh', '.status.created'), full_script.replace('.sh', '.status.submitted'))
+		print('qsub -q hep.q -l h_rt=3600 -l h_vmen=1G -o %s %s %s' % (logname, self.bopts, full_script))
+                run_command(self.dry_run, 'qsub -q hep.q -l h_rt=3600 -o %s %s %s' % (logname, self.bopts, full_script))
+	if self.job_mode == 'condor':
             outscriptname = 'condor_%s.sh' % self.task_name
             subfilename = 'condor_%s.sub' % self.task_name
             if self.task_dir is not '':
